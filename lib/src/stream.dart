@@ -30,9 +30,9 @@ class MediaTrackConstraints {
         'height': {'ideal': height},
         'frameRate': frameRate.toMap(),
         'mandatory':{
-          'minWidth': width,
-          'minHeight': height,
-          'minFrameRate': frameRate.ideal,
+          'minWidth': '$width',
+          'minHeight': '$height',
+          'minFrameRate': '${frameRate.ideal}',
         }
       };
 }
@@ -43,33 +43,37 @@ class VideoConstraints {
   final RTCRtpEncoding encodings;
 }
 
-var resolutions = ['qvga', 'vga', 'shd', 'hd', 'fhd', 'qhd'];
+var resolutions = ['qvga', 'vga', 'shd', 'hd', 'fhd', 'qhd', '4k'];
 
 var videoConstraints = <String, VideoConstraints>{
   'qvga': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 320, height: 180, frameRate: FrameRate(ideal: 15, max: 30)),
-      encodings: RTCRtpEncoding(maxBitrate: 150000, maxFramerate: 30)),
+      encodings: RTCRtpEncoding(maxBitrate: 200000, maxFramerate: 15)),
   'vga': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 640, height: 360, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 500000, maxFramerate: 60)),
+      encodings: RTCRtpEncoding(maxBitrate: 500000, maxFramerate: 30)),
   'shd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 960, height: 540, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 1200000, maxFramerate: 60)),
+      encodings: RTCRtpEncoding(maxBitrate: 1200000, maxFramerate: 30)),
   'hd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 1280, height: 720, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 3000000, maxFramerate: 60)),
+      encodings: RTCRtpEncoding(maxBitrate: 1800000, maxFramerate: 30)),
   'fhd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 1920, height: 1080, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 5000000, maxFramerate: 60)),
+      encodings: RTCRtpEncoding(maxBitrate: 2500000, maxFramerate: 30)),
   'qhd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 2560, height: 1440, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 10000000, maxFramerate: 60)),
+      encodings: RTCRtpEncoding(maxBitrate: 3000000, maxFramerate: 30)),
+  '4k': VideoConstraints(
+      constraints: MediaTrackConstraints(
+          width: 3840, height: 2160, frameRate: FrameRate(ideal: 30, max: 60)),
+      encodings: RTCRtpEncoding(maxBitrate: 5000000, maxFramerate: 30)),
 };
 
 enum Layer { none, low, medium, high }
@@ -103,7 +107,7 @@ class Constraints {
   String? deviceId;
 
   static final defaults = Constraints(
-      resolution: 'hd',
+      resolution: 'fhd',
       codec: 'vp8',
       audio: true,
       video: true,
