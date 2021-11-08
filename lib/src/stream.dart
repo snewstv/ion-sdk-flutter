@@ -28,7 +28,12 @@ class MediaTrackConstraints {
   Map<String, dynamic> toMap() => {
         'width': {'ideal': width},
         'height': {'ideal': height},
-        'frameRate': frameRate.toMap()
+        'frameRate': frameRate.toMap(),
+        'mandatory':{
+          'minWidth': width,
+          'minHeight': height,
+          'minFrameRate': frameRate.ideal,
+        }
       };
 }
 
@@ -44,27 +49,27 @@ var videoConstraints = <String, VideoConstraints>{
   'qvga': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 320, height: 180, frameRate: FrameRate(ideal: 15, max: 30)),
-      encodings: RTCRtpEncoding(maxBitrate: 150000, maxFramerate: 15)),
+      encodings: RTCRtpEncoding(maxBitrate: 150000, maxFramerate: 30)),
   'vga': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 640, height: 360, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 500000, maxFramerate: 30)),
+      encodings: RTCRtpEncoding(maxBitrate: 500000, maxFramerate: 60)),
   'shd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 960, height: 540, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 1200000, maxFramerate: 30)),
+      encodings: RTCRtpEncoding(maxBitrate: 1200000, maxFramerate: 60)),
   'hd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 1280, height: 720, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 2500000, maxFramerate: 30)),
+      encodings: RTCRtpEncoding(maxBitrate: 3000000, maxFramerate: 60)),
   'fhd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 1920, height: 1080, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 4000000, maxFramerate: 30)),
+      encodings: RTCRtpEncoding(maxBitrate: 5000000, maxFramerate: 60)),
   'qhd': VideoConstraints(
       constraints: MediaTrackConstraints(
           width: 2560, height: 1440, frameRate: FrameRate(ideal: 30, max: 60)),
-      encodings: RTCRtpEncoding(maxBitrate: 8000000, maxFramerate: 30)),
+      encodings: RTCRtpEncoding(maxBitrate: 10000000, maxFramerate: 60)),
 };
 
 enum Layer { none, low, medium, high }
@@ -145,17 +150,14 @@ class LocalStream {
     } else if (constraints.video! && constraints.resolution != null) {
       var resolution = videoConstraints[constraints.resolution]!.constraints;
       var mobileConstraints = WebRTC.platformIsWeb
-          ? {}
+          ? resolution.toMap()
           : {
-              'mandatory': {
-                'minWidth': '1280',
-                'minHeight': '720',
-                'minFrameRate': '30',
-              },
+              ...resolution.toMap(),
               'facingMode': 'user',
               'optional': []
             };
-      return {...resolution.toMap(), ...mobileConstraints};
+
+      return mobileConstraints;
     }
     return false;
   }
