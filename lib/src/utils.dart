@@ -70,10 +70,10 @@ class CodecCapabilitySelector {
     if (mline == null) {
       return null;
     }
-    var rtcpFb = mline['rtcpFb'] as List<dynamic>;
-    var fmtp = mline['fmtp'] as List<dynamic>;
+    var rtcpFb = mline['rtcpFb'] ?? <dynamic>[];
+    var fmtp = mline['fmtp'] ?? <dynamic>[];
     var payloads = (mline['payloads'] as String).split(' ');
-    var codecs = mline['rtp'] as List<dynamic>;
+    var codecs = mline['rtp'] ?? <dynamic>[];
     return CodecCapability(kind, payloads, codecs, fmtp, rtcpFb);
   }
 
@@ -94,7 +94,9 @@ class CodecCapabilitySelector {
 
   Map<String, dynamic>? _mline(String kind) {
     var mlist = _session['media'] as List<dynamic>;
-    return mlist.singleWhere((element) => element['type'] == kind,
+    return mlist.firstWhere((element) => element['type'] == kind,
         orElse: () => null);
   }
 }
+
+void unAwaited(Future<void>? future) {}

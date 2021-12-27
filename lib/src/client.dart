@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:pedantic/pedantic.dart';
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -50,10 +49,10 @@ class Transport {
               RTCIceConnectionState.RTCIceConnectionStateDisconnected)
             {
               /* TODO: implement pc.restartIce for flutter_webrtc.
-        if (pc.restartIce) {
-          // this will trigger onNegotiationNeeded
-          pc.restartIce();
-        }*/
+              if (pc.restartIce) {
+                // this will trigger onNegotiationNeeded
+                pc.restartIce();
+              }*/
             }
         };
 
@@ -93,8 +92,7 @@ class Client {
         client.initialized = true;
       }
     };
-
-    client.signal.connect();
+    unAwaited(client.signal.connect());
     return client;
   }
 
@@ -124,7 +122,6 @@ class Client {
 
   Future<void> publish(LocalStream stream) async {
     await stream.publish(transports[RolePub]!.pc!);
-    await onnegotiationneeded();
   }
 
   void close() {
@@ -143,7 +140,7 @@ class Client {
         ontrack?.call(ev.track, remote);
       };
       transports[RoleSub]!.pc!.onDataChannel = (RTCDataChannel channel) {
-        if (true /* TODO(implement RTCDataChannel.label): channel.label == API_CHANNEL*/) {
+        if (channel.label == API_CHANNEL) {
           transports[RoleSub]!.api = channel;
           transports[RoleSub]!.onapiopen?.call();
           final json = JsonDecoder();
@@ -158,12 +155,15 @@ class Client {
       var pc = transports[RolePub]!.pc;
       if (pc != null) {
         try {
-          unawaited(pc.createOffer({}).then((offer) async {
+          unAwaited(pc.createOffer({}).then((offer) async {
             await pc.setLocalDescription(offer);
             var answer = await signal.join(sid, uid, offer);
             await pc.setRemoteDescription(answer);
             transports[RolePub]!.hasRemoteDescription = true;
-            transports[RolePub]!.candidates.forEach((c) => pc.addCandidate(c));
+            transports[RolePub]!
+                .candidates
+                .forEach((c) async => await pc.addCandidate(c));
+            pc.onRenegotiationNeeded = onnegotiationneeded;
           }));
         } catch (e) {
           completer.completeError(e);

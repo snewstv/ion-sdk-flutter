@@ -10,6 +10,7 @@ import '../_library/proto/sfu/sfu.pbgrpc.dart' as pb;
 import '../client.dart';
 import '../signal/signal.dart';
 import '../stream.dart';
+import '../utils.dart';
 import 'ion.dart';
 
 class IonSDKSFU extends IonService {
@@ -49,8 +50,6 @@ class IonSDKSFU extends IonService {
       }
     };
 
-    _sfu.transports[RolePub]!.pc!.onRenegotiationNeeded =
-        () => _sfu.onnegotiationneeded();
     _sfu.ontrack = (MediaStreamTrack track, RemoteStream stream) =>
         ontrack?.call(track, stream);
     _sfu.ondatachannel =
@@ -147,8 +146,8 @@ class _IonSFUGRPCSignal extends Signal {
           .then((trailers) => connector.onTrailers(service, trailers));
       connector.onError(service, e);
     });
-    _replyStream.headers
-        .then((headers) => connector.onHeaders(service, headers));
+    unAwaited(_replyStream.headers
+        .then((headers) => connector.onHeaders(service, headers)));
     onready?.call();
   }
 
@@ -171,13 +170,11 @@ class _IonSFUGRPCSignal extends Signal {
         ..uid = uid);
     _requestStream.add(request);
 
-    Function(String, dynamic) handler;
-    handler = (respid, desc) {
-      if (respid == id) {
-        completer.complete(desc);
-      }
+    Function(RTCSessionDescription) handler;
+    handler = (desc) {
+      completer.complete(desc);
     };
-    _emitter.once('description', handler);
+    _emitter.once('join-reply', handler);
     return completer.future as Future<RTCSessionDescription>;
   }
 
